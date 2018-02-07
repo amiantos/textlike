@@ -1,0 +1,257 @@
+body {
+	background:rgba(0,0,0,1);
+	background-image:url(stone.png);
+	color:#c3baba;
+	font-size:24px;
+	font-family:sans-serif;
+	padding:0;
+	margin:0 auto;
+	-webkit-text-size-adjust:100%;
+	-ms-text-size-adjust:none;
+	height:100%;
+}
+
+a {
+	color:#3a0000;
+	text-decoration-color:#00003a;
+}
+
+a:visited {
+	color:#3b0000;
+}
+
+.logo {
+	width:60px;
+}
+
+.online {
+	font-size:12px;
+	margin-left:0;
+	margin-top:3px;
+}
+
+.attack-actions {
+	float:right;
+	display:block;
+	margin-bottom:5px;
+}
+
+.story-element {
+	font-family:serif;
+	font-style:italic;
+	margin:0 auto;
+	text-align:center;
+}
+
+.room-desc {
+	text-indent:10px;
+}
+
+.user-container {
+	float:right;
+}
+
+.side-box {
+	margin:10px;
+	padding:10px;
+	background-color:#eee;
+}
+
+.field {
+	border-top:1px solid #000;
+	border-left:1px solid #000;
+	border-bottom:1px solid #222;
+	border-right:1px solid #222;
+	border-radius:4px 4px 4px 4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px 4px 4px 4px;
+	background:rgba(255,255,255,0.8);
+	background:-moz-radial-gradient(center,ellipse cover,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.8) 80%,rgba(183,183,183,0.8) 100%);
+	background:-webkit-gradient(radial,center center,0px,center center,100%,color-stop(0%,rgba(255,255,255,0.8)),color-stop(80%,rgba(255,255,255,0.8)),color-stop(100%,rgba(183,183,183,0.8)));
+	background:-webkit-radial-gradient(center,ellipse cover,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.8) 80%,rgba(183,183,183,0.8) 100%);
+	background:-o-radial-gradient(center,ellipse cover,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.8) 80%,rgba(183,183,183,0.8) 100%);
+	background:-ms-radial-gradient(center,ellipse cover,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.8) 80%,rgba(183,183,183,0.8) 100%);
+	background:radial-gradient(ellipse at center,rgba(255,255,255,0.8) 0%,rgba(255,255,255,0.8) 80%,rgba(183,183,183,0.8) 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff',endColorstr='#a3a3a3',GradientType=1);
+}
+
+.grey {
+	font-size:14px;
+}
+
+input {
+	margin:5px;
+}
+
+.inventory td {
+	padding:2px;
+}
+
+.other-side-box {
+	padding:10px;
+	color:#1c1919;
+	display:block;
+	background: -moz-radial-gradient(center, ellipse cover,  rgba(242,242,242,0.9) 0%, rgba(242,242,242,0.81) 90%, rgba(183,183,183,0.8) 100%); /* FF3.6+ */
+background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(242,242,242,0.9)), color-stop(90%,rgba(242,242,242,0.81)), color-stop(100%,rgba(183,183,183,0.8))); /* Chrome,Safari4+ */
+background: -webkit-radial-gradient(center, ellipse cover,  rgba(242,242,242,0.9) 0%,rgba(242,242,242,0.81) 90%,rgba(183,183,183,0.8) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-radial-gradient(center, ellipse cover,  rgba(242,242,242,0.9) 0%,rgba(242,242,242,0.81) 90%,rgba(183,183,183,0.8) 100%); /* Opera 12+ */
+background: -ms-radial-gradient(center, ellipse cover,  rgba(242,242,242,0.9) 0%,rgba(242,242,242,0.81) 90%,rgba(183,183,183,0.8) 100%); /* IE10+ */
+background: radial-gradient(ellipse at center,  rgba(242,242,242,0.9) 0%,rgba(242,242,242,0.81) 90%,rgba(183,183,183,0.8) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6f2f2f2', endColorstr='#ccb7b7b7',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+	margin-left:20px;
+	margin-right:20px;
+	-webkit-box-shadow:inset 1px 1px 10px 0 rgba(0,0,0,0.9);
+	-moz-box-shadow:inset 1px 1px 10px 0 rgba(0,0,0,0.9);
+	box-shadow:inset 1px 1px 10px 0 rgba(0,0,0,0.9);
+	border-top:1px solid #000;
+	border-left:1px solid #000;
+	border-bottom:1px solid #222;
+	border-right:1px solid #222;
+	border-radius:4px 4px 4px 4px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px 0px 5px 0px;
+}
+
+.other-side-box::before {
+	background-image:url(stone2.png);
+	filter:blur(5px);
+}
+
+.container {
+	margin:20px;
+}
+
+#pageContent {
+	float:left;
+	width:100%;
+}
+
+#header {
+	display:block;
+}
+
+#main {
+	display:block;
+}
+
+#nav {
+	width:410px;
+	float:left;
+	display:block;
+}
+
+h1 {
+	font-family:serif;
+	font-variant:small-caps;
+	margin:10px;
+	text-align:center;
+}
+
+h2 {
+	font-family:serif;
+	font-variant:small-caps;
+	margin:10px;
+	text-align:center;
+}
+
+h3 {
+	font-family:serif;
+	font-variant:small-caps;
+	margin:10px;
+}
+
+ul,ol {
+	list-style:square;
+	margin-left:-10px;
+}
+
+
+p {
+	margin-top:10px;
+	margin-bottom:10px;
+	margin-left:10px;
+	margin-right:10px;
+}
+
+.err {
+	color:red;
+}
+
+.success {
+	color:#0C0;
+}
+
+table {
+	padding:0!important;
+	font-size:95%;
+}
+
+td {
+	padding:0;
+	padding-right:10px;
+}
+
+/**
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    contenteditable attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that are clearfixed.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+.cf:before,.cf:after {
+	content:" ";
+/* 1 */
+	display:table;
+/* 2 */
+}
+
+.cf:after {
+	clear:both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.cf {
+	*zoom:1;
+}
+
+#floor {
+	float:right;
+	padding:5px;
+}
+
+.menuitem {
+}
+
+#statbar {
+	margin-top:20px;
+	margin-bottom:10px;
+}
+
+#actionbar {
+	margin-bottom:10px;
+}
+
+#mainroom {
+}
+
+#attacking {
+}
+
+#weaponbar {
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+#inventory {
+}
+
+#menubar {
+	margin-top:20px;
+	margin-bottom:20px;
+}

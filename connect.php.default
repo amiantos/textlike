@@ -1,0 +1,50 @@
+<?php
+
+if(!defined('INCLUDE_CHECK')) die('You are not allowed to execute this file directly');
+
+$db_host		= 'HOST';
+$db_user		= 'USERNAME';
+$db_pass		= 'PASSWORD';
+$db_database	= 'DATABASE'; 
+
+/* End config */
+
+$link = mysql_connect($db_host,$db_user,$db_pass) or die('Unable to establish a DB connection');
+
+mysql_select_db($db_database,$link);
+mysql_query("SET names UTF8");
+
+date_default_timezone_set('America/Los_Angeles');
+$date = date("Y-m-d H:i:s");
+
+function post_tweet($tweet_text) {
+
+  // Use Matt Harris' OAuth library to make the connection
+  // This lives at: https://github.com/themattharris/tmhOAuth
+  require_once('tmhoauth/tmhOAuth.php');
+      
+  // Set the authorization values
+  // In keeping with the OAuth tradition of maximum confusion, 
+  // the names of some of these values are different from the Twitter Dev interface
+  // user_token is called Access Token on the Dev site
+  // user_secret is called Access Token Secret on the Dev site
+  // The values here have asterisks to hide the true contents 
+  // You need to use the actual values from Twitter
+  $connection = new tmhOAuth(array(
+    'consumer_key' => 'consumer_key',
+    'consumer_secret' => 'consumer_secret',
+    'user_token' => 'user_token-CpW9FhqKs9TqjSJUTQST45sn5o8UN9089YeN4K2I',
+    'user_secret' => 'user_secret',
+	'curl_ssl_verifypeer'   => false
+  )); 
+  
+  // Make the API call
+  $connection->request('POST', 
+    $connection->url('1.1/statuses/update'), 
+    array('status' => $tweet_text));
+  
+  return $connection->response['code'];
+}
+
+
+?>
