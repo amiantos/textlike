@@ -243,6 +243,18 @@ export interface BattleLogEntry {
 }
 
 // ============================================================================
+// FLOOR STATE (for tracking boss/stairs per level)
+// ============================================================================
+
+export interface FloorState {
+  level: number
+  stairsCreated: boolean
+  bossSpawned: boolean
+  bossRoomId: string | null
+  bossMobId: string | null
+}
+
+// ============================================================================
 // GAME STATE
 // ============================================================================
 
@@ -256,6 +268,9 @@ export interface GameState {
   tomes: Map<string, Tome>
   consumables: Map<string, Consumable>
   chests: Map<string, Chest>
+
+  // Floor state (boss/stairs tracking per level)
+  floorStates: Map<number, FloorState>
 
   // Battle log
   battleLog: BattleLogEntry[]

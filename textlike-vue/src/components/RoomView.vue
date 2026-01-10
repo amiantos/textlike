@@ -101,6 +101,9 @@ const hasStairsDown = computed(() => game.currentRoom?.exits.down !== null)
 const hasStairsUp = computed(() => game.currentRoom?.exits.up !== null)
 const hasStairs = computed(() => hasStairsDown.value || hasStairsUp.value)
 
+// Stairs are locked if boss is alive (PHP: boss='$level' AND corpse='0')
+const areStairsLocked = computed(() => hasStairs.value && !game.isCurrentFloorBossDefeated)
+
 // Bandages and apples counts
 const bandagesInRoom = computed(() => {
   return game.roomItems.consumables.filter(c => c.kind === 'Bandages')
@@ -324,6 +327,7 @@ const firstApple = computed(() => applesInRoom.value[0])
           <template v-if="index < horizontalExits.length - 2">, </template>
         </template>
         <template v-if="!hasStairs">.</template>
+        <template v-else-if="areStairsLocked">. <span class="locked">The staircase is locked until you defeat the boss on this level.</span></template>
         <template v-else>. In the center of the room, a staircase leading
           <template v-if="hasStairsDown">
             <a
@@ -341,6 +345,9 @@ const firstApple = computed(() => applesInRoom.value[0])
       </p>
 
       <!-- No horizontal exits but has stairs -->
+      <p v-else-if="hasStairs && areStairsLocked" class="room-desc">
+        <span class="locked">The staircase is locked until you defeat the boss on this level.</span>
+      </p>
       <p v-else-if="hasStairs" class="room-desc">
         In the center of the room, a staircase leading
         <template v-if="hasStairsDown">

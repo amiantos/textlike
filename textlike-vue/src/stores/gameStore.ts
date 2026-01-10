@@ -13,9 +13,11 @@ import type {
   BattleLogEntry,
   HighScore,
   Direction,
+  FloorState,
 } from '../engine/types'
 import { createCharacter, calculateCurrentWeight, countBandages, countApples, calculateScore, isEncumbered, getCharacterInventory, spendStatPoint, healWithApple, useBandages } from '../engine/character'
-import { createInitialRoom, generateExitsForRoom, generateChest, shouldSpawnChest, shouldBeSpecialChest, getFloorDisplay, generateIntroStatement } from '../engine/dungeon'
+import { createInitialRoom, generateExitsForRoom, generateChest, shouldSpawnChest, shouldBeSpecialChest, getFloorDisplay, generateIntroStatement, allRoomsGeneratedOnLevel, createStairsDown } from '../engine/dungeon'
+import { randomChoice } from '../engine/utils'
 import { generateMobWithEquipment, getMobSpawnCount } from '../engine/mobs'
 import { generateSpecialChestLoot, generateNormalChestLoot } from '../engine/items'
 import { executeCombatTurn, executeExplorationTurn, createBattleLogEntry } from '../engine/combat'
@@ -38,6 +40,7 @@ export const useGameStore = defineStore('game', () => {
   const chests = ref<Map<string, Chest>>(new Map())
   const battleLog = ref<BattleLogEntry[]>([])
   const highScores = ref<HighScore[]>([])
+  const floorStates = ref<Map<number, FloorState>>(new Map())
   const gameStarted = ref(false)
   const introMessage = ref<string>('')
   const isDefending = ref(false)
@@ -146,6 +149,94 @@ export const useGameStore = defineStore('game', () => {
     return armors.value.get(currentMob.value.equippedArmorId) ?? null
   })
 
+  // Check if the current floor's boss has been defeated
+  // PHP: checks if mob with boss='$level' AND corpse='0' exists
+  const isCurrentFloorBossDefeated = computed(() => {
+    if (!currentRoom.value) return true // No room, assume no boss
+    const level = currentRoom.value.level
+    const floorState = floorStates.value.get(level)
+
+    // If no floor state or no boss spawned yet, treat as "defeated" (no block)
+    if (!floorState || !floorState.bossSpawned || !floorState.bossMobId) return true
+
+    // Check if the boss mob is a corpse
+    const bossMob = mobs.value.get(floorState.bossMobId)
+    return !bossMob || bossMob.isCorpse
+  })
+
+  // Check if stairs exist on current floor
+  const doStairsExistOnCurrentFloor = computed(() => {
+    if (!currentRoom.value) return false
+    const level = currentRoom.value.level
+
+    // Check if any room on this level has stairs down
+    for (const room of rooms.value.values()) {
+      if (room.level === level && room.exits.down !== null) {
+        return true
+      }
+    }
+    return false
+  })
+
+  // ============================================================================
+  // HELPER FUNCTIONS
+  // ============================================================================
+
+  /**
+   * Check if stairs should be generated and if so, create them and spawn boss
+   * PHP behavior (functions.php:232-289):
+   * - Only triggers when floor generation is complete (no unexplored rooms)
+   * - Stairs don't already exist
+   * - Places stairs in an unexplored room if any, otherwise current room
+   * - Spawns boss in random room on the floor
+   */
+  function maybeGenerateStairsAndBoss(level: number) {
+    // Check if we already have floor state with stairs
+    let floorState = floorStates.value.get(level)
+    if (floorState?.stairsCreated) return
+
+    // Check if all rooms on this level have been generated
+    if (!allRoomsGeneratedOnLevel(rooms.value, level)) return
+
+    // Check if stairs already exist on this level
+    for (const room of rooms.value.values()) {
+      if (room.level === level && room.exits.down !== null) return
+    }
+
+    // Find a room for stairs - prefer unexplored rooms, but since all are generated,
+    // PHP logic falls back to finding a room without a down exit
+    const levelRooms = Array.from(rooms.value.values()).filter(r => r.level === level)
+    if (levelRooms.length === 0) return
+
+    // Pick a random room for stairs (PHP picks first unexplored, but all are explored now)
+    const stairRoom = randomChoice(levelRooms)
+
+    // Create stairs down to next level
+    const newRoom = createStairsDown(stairRoom)
+    rooms.value.set(newRoom.id, newRoom)
+
+    // Spawn boss in a random room on this floor
+    const bossRoom = randomChoice(levelRooms)
+    const { mob: bossMob, weapon: bossWeapon, armor: bossArmor } = generateMobWithEquipment(
+      level,
+      bossRoom.id,
+      true // isBoss = true
+    )
+    mobs.value.set(bossMob.id, bossMob)
+    weapons.value.set(bossWeapon.id, bossWeapon)
+    armors.value.set(bossArmor.id, bossArmor)
+
+    // Update floor state
+    floorState = {
+      level,
+      stairsCreated: true,
+      bossSpawned: true,
+      bossRoomId: bossRoom.id,
+      bossMobId: bossMob.id,
+    }
+    floorStates.value.set(level, floorState)
+  }
+
   // ============================================================================
   // ACTIONS
   // ============================================================================
@@ -159,6 +250,7 @@ export const useGameStore = defineStore('game', () => {
     tomes.value.clear()
     consumables.value.clear()
     chests.value.clear()
+    floorStates.value.clear()
     battleLog.value = []
     isDefending.value = false
 
@@ -235,6 +327,10 @@ export const useGameStore = defineStore('game', () => {
         rooms.value.set(room.id, room)
       }
     }
+
+    // Check if we should generate stairs and boss for this floor
+    // PHP does this when all rooms are explored (roomsGenned=1)
+    maybeGenerateStairsAndBoss(targetRoom.level)
 
     // Clear intro message after first move
     introMessage.value = ''
@@ -538,6 +634,7 @@ export const useGameStore = defineStore('game', () => {
       tomes: Array.from(tomes.value.entries()),
       consumables: Array.from(consumables.value.entries()),
       chests: Array.from(chests.value.entries()),
+      floorStates: Array.from(floorStates.value.entries()),
       battleLog: battleLog.value,
       highScores: highScores.value,
       gameStarted: gameStarted.value,
@@ -560,6 +657,7 @@ export const useGameStore = defineStore('game', () => {
       tomes.value = new Map(state.tomes)
       consumables.value = new Map(state.consumables)
       chests.value = new Map(state.chests)
+      floorStates.value = new Map(state.floorStates || [])
       battleLog.value = state.battleLog || []
       highScores.value = state.highScores || []
       gameStarted.value = state.gameStarted
@@ -592,6 +690,7 @@ export const useGameStore = defineStore('game', () => {
     tomes,
     consumables,
     chests,
+    floorStates,
     battleLog,
     highScores,
     gameStarted,
@@ -617,6 +716,8 @@ export const useGameStore = defineStore('game', () => {
     roomChests,
     mobWeapon,
     mobArmor,
+    isCurrentFloorBossDefeated,
+    doStairsExistOnCurrentFloor,
 
     // Actions
     startNewGame,

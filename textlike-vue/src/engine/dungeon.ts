@@ -180,8 +180,30 @@ export function linkRooms(
 }
 
 /**
+ * Count rooms on a specific level
+ * Matches PHP number_of_rooms() function
+ */
+export function countRoomsOnLevel(
+  rooms: Map<string, Room>,
+  level: number
+): number {
+  let count = 0
+  for (const room of rooms.values()) {
+    if (room.level === level) {
+      count++
+    }
+  }
+  return count
+}
+
+/**
  * Generate exits for a room (creates new rooms or links to existing)
  * Returns array of newly created rooms
+ *
+ * PHP behavior (functions.php:48-296):
+ * - 20% chance per direction to create a new room (rand(0,4) == 1)
+ * - Only creates rooms if total rooms on level < 4
+ * - Loops until at least 4 rooms exist on the level
  */
 export function generateExitsForRoom(
   room: Room,
@@ -202,6 +224,9 @@ export function generateExitsForRoom(
   // Track which directions we could create exits in
   const availableDirections: Direction[] = []
 
+  // Helper to get current total room count including new rooms
+  const getTotalRoomCount = () => countRoomsOnLevel(existingRooms, room.level) + newRooms.length
+
   for (const direction of directions) {
     // Skip if already has exit in this direction
     if (room.exits[direction] !== null) continue
@@ -215,8 +240,9 @@ export function generateExitsForRoom(
       // Link to existing room
       linkRooms(room, existingRoom, direction)
     } else {
-      // 25% chance to create a new room (rand(0,4) == 1 in original)
-      if (chance(4)) {
+      // PHP: only creates room if rand(0,4)==1 AND number_of_rooms < 4
+      // 20% chance to create a new room, but only if we need more rooms
+      if (chance(5) && getTotalRoomCount() < 4) {
         const newRoom = createRoom(coords.x, coords.y, room.level)
         linkRooms(room, newRoom, direction)
         newRooms.push(newRoom)
@@ -224,6 +250,20 @@ export function generateExitsForRoom(
         // Track this as an available direction for fallback
         availableDirections.push(direction)
       }
+    }
+  }
+
+  // PHP behavior: loop back if room count < 4 (goto a)
+  // Force create rooms in available directions until we have at least 4 rooms
+  while (getTotalRoomCount() < 4 && availableDirections.length > 0) {
+    const forcedDirection = availableDirections.shift()!
+    const coords = getCoordinatesInDirection(room.x, room.y, forcedDirection)
+
+    // Double-check no room exists (could have been created by another path)
+    if (!findRoomAtCoordinates(existingRooms, coords.x, coords.y, room.level)) {
+      const newRoom = createRoom(coords.x, coords.y, room.level)
+      linkRooms(room, newRoom, forcedDirection)
+      newRooms.push(newRoom)
     }
   }
 
