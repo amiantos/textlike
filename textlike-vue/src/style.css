@@ -1,0 +1,331 @@
+/* Textlike - Main Styles */
+/* Based on original desktop.css */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-color: #000;
+  --text-color: #c3baba;
+  --link-color: #3a0000;
+  --link-visited: #3b0000;
+  --box-bg: rgba(242, 242, 242, 0.9);
+  --box-text: #1c1919;
+  --border-color: #808080;
+  --error-color: red;
+  --success-color: #0C0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: rgba(0, 0, 0, 1);
+  background-image: url('/stone.png');
+  color: var(--text-color);
+  font-size: 24px;
+  font-family: sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: none;
+}
+
+#app {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Responsive sizing */
+@media (min-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+  #app {
+    max-width: 440px;
+  }
+}
+
+/* Links */
+a {
+  color: var(--link-color);
+  text-decoration: underline;
+  text-decoration-color: #00003a;
+  cursor: pointer;
+}
+
+a:visited {
+  color: var(--link-visited);
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-family: serif;
+  font-variant: small-caps;
+  margin: 10px;
+  text-align: center;
+}
+
+h1 { font-size: 1.5em; }
+h2 { font-size: 1.25em; }
+h3 { font-size: 1.1em; }
+
+p {
+  margin: 10px;
+}
+
+ul, ol {
+  list-style: square;
+  margin-left: -10px;
+  padding-left: 20px;
+}
+
+/* Content Box - Main panel style */
+.content-box {
+  padding: 10px;
+  color: var(--box-text);
+  display: block;
+  background: radial-gradient(ellipse at center, rgba(242, 242, 242, 0.9) 0%, rgba(242, 242, 242, 0.81) 90%, rgba(183, 183, 183, 0.8) 100%);
+  margin: 10px 0;
+  box-shadow: inset 1px 1px 10px 0 rgba(0, 0, 0, 0.9);
+  border-top: 1px solid #000;
+  border-left: 1px solid #000;
+  border-bottom: 1px solid #222;
+  border-right: 1px solid #222;
+  border-radius: 4px;
+}
+
+/* Logo */
+.logo {
+  width: 60px;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .logo {
+    width: 40px;
+  }
+}
+
+/* Tables */
+table {
+  padding: 0;
+  font-size: 95%;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td {
+  padding: 2px;
+}
+
+/* Form elements */
+input[type="text"] {
+  padding: 8px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: inherit;
+  width: 100%;
+  margin: 5px 0;
+}
+
+button, .btn {
+  padding: 8px 16px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:hover, .btn:hover {
+  background: rgba(220, 220, 220, 0.9);
+}
+
+/* Status colors */
+.error, .err {
+  color: var(--error-color);
+}
+
+.success {
+  color: var(--success-color);
+}
+
+/* Stat bar specific */
+.stat-bar {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  font-variant: small-caps;
+  font-size: 0.8em;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  border-right: 1px solid var(--border-color);
+  padding: 2px 4px;
+}
+
+.stat-item:last-child {
+  border-right: none;
+}
+
+/* Action bar */
+.action-bar {
+  margin-bottom: 10px;
+}
+
+.action-bar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Room description */
+.room-desc {
+  text-indent: 10px;
+}
+
+/* Combat styles */
+.combat-action {
+  color: red;
+  font-weight: bold;
+}
+
+.bleeding {
+  color: red;
+  font-weight: bold;
+}
+
+/* Inventory table */
+.inventory-table td {
+  padding: 4px;
+  border-bottom: 1px solid #ddd;
+}
+
+.inventory-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Battle log */
+.battle-log {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.battle-log-entry {
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.battle-log-entry:last-child {
+  border-bottom: none;
+}
+
+/* Floor display */
+.floor-display {
+  float: right;
+  padding: 5px;
+}
+
+/* Menu items */
+.menu-item {
+  padding: 4px 0;
+}
+
+/* Item links */
+.item-link {
+  cursor: pointer;
+}
+
+.item-link:hover {
+  text-decoration: underline;
+}
+
+/* Equipped indicator */
+.equipped {
+  font-weight: bold;
+}
+
+/* Clickable list items */
+.clickable-item {
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.clickable-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Clearfix */
+.cf::before,
+.cf::after {
+  content: " ";
+  display: table;
+}
+
+.cf::after {
+  clear: both;
+}
+
+/* Center helper */
+.text-center {
+  text-align: center;
+}
+
+/* Flex helpers */
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  justify-content: space-between;
+}
+
+.flex-center {
+  justify-content: center;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+/* Spacing */
+.mt-1 { margin-top: 10px; }
+.mt-2 { margin-top: 20px; }
+.mb-1 { margin-bottom: 10px; }
+.mb-2 { margin-bottom: 20px; }
+
+/* Death screen animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.death-screen {
+  animation: fadeIn 1s ease-in;
+}
