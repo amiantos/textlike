@@ -148,8 +148,8 @@ export function getBodyPartName(part: BodyPart): string {
 // ============================================================================
 
 /**
- * Calculate weapon attack damage
- * PHP behavior: Preserves strength bonus even when armor blocks weapon damage
+ * Calculate weapon attack damage (player attacking mob)
+ * PHP mob_take_damage behavior: Preserves strength bonus when damage < str_bonus
  * damage = weaponDamage + (strength * 0.5)
  * After armor reduction, if damage dropped below strength bonus, add it back
  */
@@ -167,9 +167,36 @@ export function calculateWeaponDamage(
     finalDamage = 0
   }
 
-  // PHP preserves strength modifier: if damage dropped below str bonus, add it back
+  // PHP mob_take_damage: if damage dropped below str bonus, add it back
   if (finalDamage < strengthBonus) {
     finalDamage = finalDamage + strengthBonus
+  }
+
+  return roundTo(finalDamage, 1)
+}
+
+/**
+ * Calculate weapon attack damage (mob attacking player)
+ * PHP take_damage behavior: Preserves strength bonus ONLY when damage is exactly 0
+ * This is different from mob_take_damage which uses < comparison
+ */
+export function calculateMobAttackDamage(
+  weaponDamage: number,
+  attackerStrength: number,
+  armorProtection: number
+): number {
+  const strengthBonus = attackerStrength * 0.5
+  const baseDamage = weaponDamage + strengthBonus
+  let finalDamage = baseDamage - armorProtection
+
+  // Ensure minimum 0
+  if (finalDamage <= 0) {
+    finalDamage = 0
+  }
+
+  // PHP take_damage: ONLY add strength back when damage is exactly 0 (fully blocked)
+  if (finalDamage === 0) {
+    finalDamage = strengthBonus
   }
 
   return roundTo(finalDamage, 1)
@@ -353,7 +380,7 @@ export function mobAttack(
   let armorBroke = false
 
   if (mobWeapon) {
-    damage = calculateWeaponDamage(mobWeapon.damage, mob.strength, armorProtection)
+    damage = calculateMobAttackDamage(mobWeapon.damage, mob.strength, armorProtection)
     weaponBroke = damageWeapon(mobWeapon)
   } else {
     damage = calculatePunchDamage(mob.strength, armorProtection)
@@ -385,17 +412,19 @@ export function mobAttack(
 
 /**
  * Apply damage to a mob's body part
+ * PHP behavior: Damage only accumulates on body parts (wounds), NOT current health
+ * Health is only reduced by bleeding, not direct weapon damage
  */
 function applyDamageToMob(mob: Mob, damage: number, bodyPart: BodyPart): void {
-  mob.currentHealth = Math.max(0, mob.currentHealth - damage)
   mob.wounds[bodyPart] += damage
 }
 
 /**
  * Apply damage to a character's body part
+ * PHP behavior: Damage only accumulates on body parts (wounds), NOT current health
+ * Health is only reduced by bleeding, not direct weapon damage
  */
 function applyDamageToCharacter(character: Character, damage: number, bodyPart: BodyPart): void {
-  character.currentHealth = Math.max(0, character.currentHealth - damage)
   character.wounds[bodyPart] += damage
 }
 

@@ -248,22 +248,23 @@ export function createEmptyWounds(): BodyWounds {
 
 /**
  * Calculate total bleeding for a mob
- * Mobs bleed more than players (60% max vs 10%)
+ * PHP behavior: Mobs bleed more (60% max vs 10%), NO offset applied, round each part
  */
 export function calculateMobBleeding(mob: Mob): number {
-  const maxBleed = mob.totalHealth * 0.6
+  const maxBleed = Math.round(mob.totalHealth * 0.6)
 
-  // Body part weights for mobs
-  const headDamage = (mob.wounds.head / mob.totalHealth) * (maxBleed * 0.5)
-  const torsoDamage = (mob.wounds.torso / mob.totalHealth) * (maxBleed * 0.4)
-  const leftArmDamage = (mob.wounds.leftArm / mob.totalHealth) * (maxBleed * 0.3)
-  const rightArmDamage = (mob.wounds.rightArm / mob.totalHealth) * (maxBleed * 0.3)
-  const leftLegDamage = (mob.wounds.leftLeg / mob.totalHealth) * (maxBleed * 0.2)
-  const rightLegDamage = (mob.wounds.rightLeg / mob.totalHealth) * (maxBleed * 0.2)
+  // PHP rounds each body part damage individually (no offset for mobs)
+  const headDamage = Math.round((mob.wounds.head / mob.totalHealth) * (maxBleed * 0.5))
+  const torsoDamage = Math.round((mob.wounds.torso / mob.totalHealth) * (maxBleed * 0.4))
+  const leftArmDamage = Math.round((mob.wounds.leftArm / mob.totalHealth) * (maxBleed * 0.3))
+  const rightArmDamage = Math.round((mob.wounds.rightArm / mob.totalHealth) * (maxBleed * 0.3))
+  const leftLegDamage = Math.round((mob.wounds.leftLeg / mob.totalHealth) * (maxBleed * 0.2))
+  const rightLegDamage = Math.round((mob.wounds.rightLeg / mob.totalHealth) * (maxBleed * 0.2))
 
   const total = headDamage + torsoDamage + leftArmDamage + rightArmDamage + leftLegDamage + rightLegDamage
 
-  return Math.min(total, maxBleed)
+  // PHP doesn't cap mob bleeding at maxBleed (unlike player bleeding)
+  return total
 }
 
 /**

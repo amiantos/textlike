@@ -197,32 +197,32 @@ export function createEmptyWounds(): BodyWounds {
 
 /**
  * Calculate total bleeding damage per turn for character
- * Formula from original: wounds contribute to bleeding based on body part weights
+ * PHP behavior: Uses round() on maxBleed, offset, and each body part damage individually
  */
 export function calculateBleeding(character: Character): number {
-  const maxBleed = character.totalHealth * 0.1
-  const offset = character.totalHealth * 0.05
+  const maxBleed = Math.round(character.totalHealth * 0.1)
+  const offset = Math.round(character.totalHealth * 0.05)
 
-  // Apply natural healing offset to wounds (don't go below 0)
-  const wounds = { ...character.wounds }
-  wounds.head = Math.max(0, wounds.head - offset)
-  wounds.torso = Math.max(0, wounds.torso - offset)
-  wounds.leftArm = Math.max(0, wounds.leftArm - offset)
-  wounds.rightArm = Math.max(0, wounds.rightArm - offset)
-  wounds.leftLeg = Math.max(0, wounds.leftLeg - offset)
-  wounds.rightLeg = Math.max(0, wounds.rightLeg - offset)
+  // Apply offset to wounds before calculation (PHP: if wound <= offset, set to 0, else subtract offset)
+  const head = character.wounds.head <= offset ? 0 : character.wounds.head - offset
+  const torso = character.wounds.torso <= offset ? 0 : character.wounds.torso - offset
+  const leftArm = character.wounds.leftArm <= offset ? 0 : character.wounds.leftArm - offset
+  const rightArm = character.wounds.rightArm <= offset ? 0 : character.wounds.rightArm - offset
+  const leftLeg = character.wounds.leftLeg <= offset ? 0 : character.wounds.leftLeg - offset
+  const rightLeg = character.wounds.rightLeg <= offset ? 0 : character.wounds.rightLeg - offset
 
-  // Calculate bleed damage per location
-  const headDamage = (wounds.head / character.totalHealth) * (maxBleed * 0.4)
-  const torsoDamage = (wounds.torso / character.totalHealth) * (maxBleed * 0.3)
-  const leftArmDamage = (wounds.leftArm / character.totalHealth) * (maxBleed * 0.2)
-  const rightArmDamage = (wounds.rightArm / character.totalHealth) * (maxBleed * 0.2)
-  const leftLegDamage = (wounds.leftLeg / character.totalHealth) * (maxBleed * 0.1)
-  const rightLegDamage = (wounds.rightLeg / character.totalHealth) * (maxBleed * 0.1)
+  // Calculate bleed damage per location (PHP rounds each individually)
+  const headDamage = Math.round((head / character.totalHealth) * (maxBleed * 0.4))
+  const torsoDamage = Math.round((torso / character.totalHealth) * (maxBleed * 0.3))
+  const leftArmDamage = Math.round((leftArm / character.totalHealth) * (maxBleed * 0.2))
+  const rightArmDamage = Math.round((rightArm / character.totalHealth) * (maxBleed * 0.2))
+  const leftLegDamage = Math.round((leftLeg / character.totalHealth) * (maxBleed * 0.1))
+  const rightLegDamage = Math.round((rightLeg / character.totalHealth) * (maxBleed * 0.1))
 
   const total = headDamage + torsoDamage + leftArmDamage + rightArmDamage + leftLegDamage + rightLegDamage
 
-  return Math.min(roundTo(total, 1), maxBleed)
+  // Cap at maxBleed
+  return total > maxBleed ? maxBleed : total
 }
 
 /**
