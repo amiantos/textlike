@@ -6,65 +6,76 @@ import { generateId, randomChoice, chance } from './utils'
 
 // ============================================================================
 // ROOM DESCRIPTION GENERATION
+// Matches PHP roomdesccreator.php exactly: picks ONE category, then ONE text
 // ============================================================================
 
-const INTRO_STATEMENTS = [
-  'The room is hot and stuffy.',
-  'The room feels cold and damp.',
-  'The room is filled with a fine layer of sand.',
+// Intro statements (PHP uses rand 1-3, so 3 options)
+const ROOM_DESC_INTRO = [
+  'The air here is hot, and you can feel it in your lungs; whatever it is floating in the air, it is inside you.',
+  'You see your breath in the air before you even have a chance to shiver. You try rubbing the cold out of your arms, but it\'s already cut you to the bone.',
+  'This room is filled with a thick cloud of swirling sand, being pushed by a wind you can\'t find the source of. You have to put a cloth over your mouth to breathe, and squint at your surroundings through pinched fingers.',
 ]
 
-const FLOOR_DESCRIPTIONS = [
-  'The floor is covered in old bones.',
-  'The floor is surprisingly clean.',
-  'The floor is slick with moisture.',
-  'The floor is covered in strange markings.',
+// Floor descriptions (PHP uses rand 0-3, so 4 options)
+const ROOM_DESC_FLOOR = [
+  'The ground under your feet feels moist and sticky. You think that falling down here would turn into a messy ordeal.',
+  'With every step you take, cockroaches crunch under your feet; countless others race away into the dark corners.',
+  'If you stand in place too long, the sand all over the floor begins to swallow your feet. If you keep moving, you should be fine.',
+  'The ground under your feet is slick with a clear substance. It glistens in what little light there is. It appears to be the trails of several giant snails, but how they came into, and slipped out of, the room isn\'t apparent to you.',
 ]
 
-const WALL_DESCRIPTIONS = [
-  'The walls are covered in moss.',
-  'The walls have ancient runes carved into them.',
-  'The walls are scorched black.',
-  'The walls seem to pulse with an eerie light.',
+// Wall descriptions (PHP uses rand 0-3, so 4 options)
+const ROOM_DESC_WALL = [
+  'Adorning the walls of this room are enormous engravings, depicting the fallen heroes of civilizations long forgotten.',
+  'Hanging on one of the walls of this room is large painting of a horse. The horse is screaming.',
+  'The walls of this room are covered in a beautiful mosaic. The tiles of turquoise, amethyst, and quartz form an elaborate scene of a bustling market place in the city, which stands in sharp contrast to the desolation around you. When you look closer, however, you see that the wears on display in the market are actually desiccated pieces of dismembered corpses.',
+  'Before you, large blood red tapestries hang from the walls, adorned with a strange crest you\'ve never seen before.',
 ]
 
-const CEILING_DESCRIPTIONS = [
-  'Stalactites hang from the ceiling.',
-  'The ceiling is impossibly high.',
-  'The ceiling drips with condensation.',
-  'The ceiling is covered in cobwebs.',
+// Ceiling/overhead descriptions (PHP uses rand 0-3, so 4 options)
+const ROOM_DESC_CEILING = [
+  'Suspended over your head by chains, the bodies of the long dead and forgotten sway, as if jostled by someone else who was here just before you.',
+  'At first you think the ceiling is pulsating, but you realize that it is home to hundreds of bats. You decide it\'s best not to disturb them.',
+  'From above you can hear the sound of something slowly chewing on something else, but the ceiling is too high and all you can see is darkness. Whatever it making that sound, you hope it\'s friendly, or at least totally distracted already.',
+  'The sound of chains clinking together fills the chamber as you move through it, pushing away the variety of hooks hanging down from above.',
 ]
 
-const SPECIAL_FEATURES = [
-  'A mysterious statue stands in the corner.',
-  'An ancient altar dominates the center of the room.',
-  'A dried-up fountain sits against one wall.',
-  'Strange glowing crystals are embedded in the stone.',
+// Special features (PHP uses rand 0-3, so 4 options)
+const ROOM_DESC_SPECIAL = [
+  'Coming from a hole in the base of one of the walls, a small stream cuts its way through the center of this room. The pebbles at the bottom of the stream have been worn smooth by decades of tumbling water.',
+  'Though you can\'t fathom why, a small crack in the ceiling exposes a little of what must be sunlight. You can feel the warmth of it on your face; taking a moment to enjoy it, you remember something you had forgotten long ago.',
+  'You only saw it for a moment when you entered, but you swear there was a faery hovering in the middle of the room, only to vanish into a crack in the wall when it noticed you come in.',
+  'A stream of water falls from a hole in the ceiling and into a hole in the floor. Both holes are too precise to be natural. Where is this water going? Where is it from?',
+]
+
+// All room description categories for random selection
+const ROOM_DESC_CATEGORIES = [
+  ROOM_DESC_INTRO,
+  ROOM_DESC_FLOOR,
+  ROOM_DESC_WALL,
+  ROOM_DESC_CEILING,
+  ROOM_DESC_SPECIAL,
 ]
 
 /**
  * Generate a random room description
+ * PHP behavior: picks ONE category (0-4), then picks ONE text from that category
  */
 export function generateRoomDescription(): string {
-  const intro = randomChoice(INTRO_STATEMENTS)
-  const floor = randomChoice(FLOOR_DESCRIPTIONS)
-  const wall = randomChoice(WALL_DESCRIPTIONS)
-  const ceiling = randomChoice(CEILING_DESCRIPTIONS)
-
-  // 50% chance for a special feature
-  const special = chance(2) ? ` ${randomChoice(SPECIAL_FEATURES)}` : ''
-
-  return `${intro} ${floor} ${wall} ${ceiling}${special}`
+  const category = randomChoice(ROOM_DESC_CATEGORIES)
+  return randomChoice(category)
 }
 
 /**
  * Generate the intro statement for the very first room
+ * Matches PHP load_intro_statement() exactly
  */
 export function generateIntroStatement(): string {
   const statements = [
-    'You awaken in a dark, unfamiliar place. The air is thick with dust and the smell of age. You have no memory of how you got here.',
-    'Your eyes slowly adjust to the dim light. You find yourself in what appears to be an ancient dungeon. The only way out is forward.',
-    'The sound of dripping water echoes through the chamber. You stand up, brushing off the dirt, and look around. Adventure awaits.',
+    'You woke up. For a second you forgot why you were here, or where here even was, but then you remembered and a calmness washed over you.',
+    'Welcome to the rest of your life. Maybe if you reach the bottom, you\'ll get to survive?',
+    'Where are you? How did you get here? Wait... who are you? Maybe the better question is, what did you do to end up here?',
+    'You sniff the air. There are hints of jasmine and bitter almond, or maybe that is just a memory you\'d rather forget.',
   ]
   return randomChoice(statements)
 }

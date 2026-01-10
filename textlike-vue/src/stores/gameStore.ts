@@ -115,6 +115,11 @@ export const useGameStore = defineStore('game', () => {
     return Array.from(mobs.value.values()).filter(m => m.roomId === currentRoom.value!.id && !m.isCorpse)
   })
 
+  const roomCorpses = computed(() => {
+    if (!currentRoom.value) return []
+    return Array.from(mobs.value.values()).filter(m => m.roomId === currentRoom.value!.id && m.isCorpse)
+  })
+
   const roomItems = computed(() => {
     if (!currentRoom.value) return { weapons: [], armors: [], tomes: [], consumables: [] }
     const roomId = currentRoom.value.id
@@ -607,6 +612,7 @@ export const useGameStore = defineStore('game', () => {
     equippedTome,
     inventory,
     roomMobs,
+    roomCorpses,
     roomItems,
     roomChests,
     mobWeapon,
