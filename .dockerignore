@@ -1,0 +1,8 @@
+textlike-vue/
+.git/
+.gitignore
+*.md
+.claude/
+.dockerignore
+Dockerfile
+docker-compose.yml
