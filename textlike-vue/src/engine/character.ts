@@ -101,13 +101,14 @@ export function refreshCharacterStats(character: Character): void {
 
 /**
  * Calculate experience needed to reach a specific level
+ * Uses 1.5x multiplier per level (matching PHP 0.8.1)
  */
 export function calculateExperienceForLevel(level: number): number {
   let expLast = 0
   let expNeed = 100
 
   for (let i = 1; i < level; i++) {
-    const expNeeded = (expNeed - expLast) * 1.1
+    const expNeeded = (expNeed - expLast) * 1.5
     expLast = expNeed
     expNeed = expNeeded + expLast
   }
@@ -396,12 +397,17 @@ export function killCharacter(character: Character): void {
 // ============================================================================
 
 /**
- * Auto-heal character (1 HP per turn distributed across body parts)
+ * Auto-heal character by reducing each body part wound by 1
+ * Matches PHP 0.8.1 behavior where auto_heal reduces each body part damage
  */
 export function autoHeal(character: Character): void {
-  if (character.currentHealth < character.totalHealth) {
-    character.currentHealth = Math.min(character.currentHealth + 1, character.totalHealth)
-  }
+  // Reduce each body part wound by 1 (matching PHP auto_heal)
+  character.wounds.head = Math.max(0, character.wounds.head - 1)
+  character.wounds.torso = Math.max(0, character.wounds.torso - 1)
+  character.wounds.leftArm = Math.max(0, character.wounds.leftArm - 1)
+  character.wounds.rightArm = Math.max(0, character.wounds.rightArm - 1)
+  character.wounds.leftLeg = Math.max(0, character.wounds.leftLeg - 1)
+  character.wounds.rightLeg = Math.max(0, character.wounds.rightLeg - 1)
 }
 
 /**

@@ -32,14 +32,14 @@ export function calculateMobHealth(stamina: number): number {
 
 /**
  * Calculate experience needed to reach a level
- * Uses exponential scaling with 1.1x multiplier per level
+ * Uses exponential scaling with 1.5x multiplier per level (matching PHP 0.8.1)
  */
 function calculateExperienceForLevel(level: number): number {
   let expLast = 0
   let expNeed = 100
 
   for (let i = 1; i < level; i++) {
-    const expNeeded = (expNeed - expLast) * 1.1
+    const expNeeded = (expNeed - expLast) * 1.5
     expLast = expNeed
     expNeed = expNeeded + expLast
   }
@@ -70,23 +70,37 @@ export function calculateMobExperience(level: number): number {
 /**
  * Distribute stat points among strength, stamina, and dexterity
  * Points are distributed randomly one at a time
+ * Cap per stat is points/2.5 (matching PHP 0.8.1)
  */
 function distributeStats(totalPoints: number): { strength: number; stamina: number; dexterity: number } {
   const stats = { strength: 10, stamina: 10, dexterity: 10 }
-  const maxPerStat = Math.floor(totalPoints / 2.5) + 10 // Cap per stat
+  // Max points any single stat can receive (PHP: $half_total = $points/2.5)
+  const maxPointsPerStat = Math.floor(totalPoints / 2.5)
+  // Track how many points each stat has received
+  const pointsAdded = { strength: 0, stamina: 0, dexterity: 0 }
 
   let remaining = totalPoints
   while (remaining > 0) {
+    // Check if all stats are at their cap - exit if so
+    if (pointsAdded.strength >= maxPointsPerStat &&
+        pointsAdded.stamina >= maxPointsPerStat &&
+        pointsAdded.dexterity >= maxPointsPerStat) {
+      break
+    }
+
     // Pick a random stat to increase
     const roll = randInt(1, 3)
-    if (roll === 1 && stats.strength < maxPerStat) {
+    if (roll === 1 && pointsAdded.strength < maxPointsPerStat) {
       stats.strength++
+      pointsAdded.strength++
       remaining--
-    } else if (roll === 2 && stats.stamina < maxPerStat) {
+    } else if (roll === 2 && pointsAdded.stamina < maxPointsPerStat) {
       stats.stamina++
+      pointsAdded.stamina++
       remaining--
-    } else if (roll === 3 && stats.dexterity < maxPerStat) {
+    } else if (roll === 3 && pointsAdded.dexterity < maxPointsPerStat) {
       stats.dexterity++
+      pointsAdded.dexterity++
       remaining--
     }
   }

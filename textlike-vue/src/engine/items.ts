@@ -17,45 +17,60 @@ import type {
   MaterialConfig,
   QualityConfig,
 } from './types'
-import { WEAPON_TYPES, ITEM_KINDS } from './types'
-import { generateId, randInt, randomChoice, weightedRandomChoice, roundTo, chance } from './utils'
+import { WEAPON_TYPES } from './types'
+import { generateId, randInt, randomChoice, rangeBasedChoice, weightedRandomChoice, roundTo, chance } from './utils'
 
 // ============================================================================
 // WEAPON CONFIGURATION
 // ============================================================================
 
-const WEAPON_MATERIAL_CONFIG: MaterialConfig[] = [
-  { name: 'Copper', damageMultiplier: 0.8, durabilityMultiplier: 0.8, weightMultiplier: 0.8, dropWeight: 40 },
-  { name: 'Bronze', damageMultiplier: 0.9, durabilityMultiplier: 0.9, weightMultiplier: 1.1, dropWeight: 34 },
-  { name: 'Iron', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.2, dropWeight: 16 },
-  { name: 'Steel', damageMultiplier: 1.1, durabilityMultiplier: 1.1, weightMultiplier: 0.9, dropWeight: 10 },
+// PHP 0.8.1 uses fixed ranges for material/quality selection (rand 1-100)
+// Materials: Copper (1-40), Bronze (41-74), Iron (75-90), Steel (91-100)
+// Qualities: Unbalanced (1-20), Vintage (21-40), Fine (41-78), Quality (79-90), Artisan (91-100)
+
+interface RangeConfig extends MaterialConfig {
+  minRoll: number
+  maxRoll: number
+}
+
+interface QualityRangeConfig extends QualityConfig {
+  minRoll: number
+  maxRoll: number
+}
+
+const WEAPON_MATERIAL_CONFIG: RangeConfig[] = [
+  { name: 'Copper', damageMultiplier: 0.8, durabilityMultiplier: 0.8, weightMultiplier: 0.8, dropWeight: 40, minRoll: 1, maxRoll: 40 },
+  { name: 'Bronze', damageMultiplier: 0.9, durabilityMultiplier: 0.9, weightMultiplier: 1.1, dropWeight: 34, minRoll: 41, maxRoll: 74 },
+  { name: 'Iron', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.2, dropWeight: 16, minRoll: 75, maxRoll: 90 },
+  { name: 'Steel', damageMultiplier: 1.1, durabilityMultiplier: 1.1, weightMultiplier: 0.9, dropWeight: 10, minRoll: 91, maxRoll: 100 },
 ]
 
-const WEAPON_QUALITY_CONFIG: QualityConfig[] = [
-  { name: 'Unbalanced', damageMultiplier: 0.95, durabilityMultiplier: 0.8, weightMultiplier: 1.1, dropWeight: 20 },
-  { name: 'Vintage', damageMultiplier: 0.975, durabilityMultiplier: 0.9, weightMultiplier: 1.1, dropWeight: 20 },
-  { name: 'Fine', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 38 },
-  { name: 'Quality', damageMultiplier: 1.025, durabilityMultiplier: 1.05, weightMultiplier: 0.9, dropWeight: 12 },
-  { name: 'Artisan', damageMultiplier: 1.05, durabilityMultiplier: 1.1, weightMultiplier: 0.8, dropWeight: 10 },
+const WEAPON_QUALITY_CONFIG: QualityRangeConfig[] = [
+  { name: 'Unbalanced', damageMultiplier: 0.95, durabilityMultiplier: 0.8, weightMultiplier: 1.1, dropWeight: 20, minRoll: 1, maxRoll: 20 },
+  { name: 'Vintage', damageMultiplier: 0.975, durabilityMultiplier: 0.9, weightMultiplier: 1.1, dropWeight: 20, minRoll: 21, maxRoll: 40 },
+  { name: 'Fine', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 38, minRoll: 41, maxRoll: 78 },
+  { name: 'Quality', damageMultiplier: 1.025, durabilityMultiplier: 1.05, weightMultiplier: 0.9, dropWeight: 12, minRoll: 79, maxRoll: 90 },
+  { name: 'Artisan', damageMultiplier: 1.05, durabilityMultiplier: 1.1, weightMultiplier: 0.8, dropWeight: 10, minRoll: 91, maxRoll: 100 },
 ]
 
 // ============================================================================
 // ARMOR CONFIGURATION
 // ============================================================================
 
-const ARMOR_MATERIAL_CONFIG: MaterialConfig[] = [
-  { name: 'Leather', damageMultiplier: 0.9, durabilityMultiplier: 0.8, weightMultiplier: 0.9, dropWeight: 40 },
-  { name: 'Chain', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 34 },
-  { name: 'Plate', damageMultiplier: 1.1, durabilityMultiplier: 1.1, weightMultiplier: 1.1, dropWeight: 16 },
-  { name: 'Dragon Scale', damageMultiplier: 1.2, durabilityMultiplier: 0.9, weightMultiplier: 0.8, dropWeight: 10 },
+// Using same range distribution as weapons (matching PHP 0.8.1 style)
+const ARMOR_MATERIAL_CONFIG: RangeConfig[] = [
+  { name: 'Leather', damageMultiplier: 0.9, durabilityMultiplier: 0.8, weightMultiplier: 0.9, dropWeight: 40, minRoll: 1, maxRoll: 40 },
+  { name: 'Chain', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 34, minRoll: 41, maxRoll: 74 },
+  { name: 'Plate', damageMultiplier: 1.1, durabilityMultiplier: 1.1, weightMultiplier: 1.1, dropWeight: 16, minRoll: 75, maxRoll: 90 },
+  { name: 'Dragon Scale', damageMultiplier: 1.2, durabilityMultiplier: 0.9, weightMultiplier: 0.8, dropWeight: 10, minRoll: 91, maxRoll: 100 },
 ]
 
-const ARMOR_QUALITY_CONFIG: QualityConfig[] = [
-  { name: 'Ruined', damageMultiplier: 0.8, durabilityMultiplier: 0.8, weightMultiplier: 0.9, dropWeight: 20 },
-  { name: 'Vintage', damageMultiplier: 0.9, durabilityMultiplier: 0.9, weightMultiplier: 1.0, dropWeight: 20 },
-  { name: 'Classic', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 38 },
-  { name: 'Royal', damageMultiplier: 1.1, durabilityMultiplier: 1.05, weightMultiplier: 0.9, dropWeight: 12 },
-  { name: 'Divine', damageMultiplier: 1.2, durabilityMultiplier: 1.1, weightMultiplier: 0.8, dropWeight: 10 },
+const ARMOR_QUALITY_CONFIG: QualityRangeConfig[] = [
+  { name: 'Ruined', damageMultiplier: 0.8, durabilityMultiplier: 0.8, weightMultiplier: 0.9, dropWeight: 20, minRoll: 1, maxRoll: 20 },
+  { name: 'Vintage', damageMultiplier: 0.9, durabilityMultiplier: 0.9, weightMultiplier: 1.0, dropWeight: 20, minRoll: 21, maxRoll: 40 },
+  { name: 'Classic', damageMultiplier: 1.0, durabilityMultiplier: 1.0, weightMultiplier: 1.0, dropWeight: 38, minRoll: 41, maxRoll: 78 },
+  { name: 'Royal', damageMultiplier: 1.1, durabilityMultiplier: 1.05, weightMultiplier: 0.9, dropWeight: 12, minRoll: 79, maxRoll: 90 },
+  { name: 'Divine', damageMultiplier: 1.2, durabilityMultiplier: 1.1, weightMultiplier: 0.8, dropWeight: 10, minRoll: 91, maxRoll: 100 },
 ]
 
 // ============================================================================
@@ -82,9 +97,9 @@ export function generateWeapon(level: number, location: ItemLocation): Weapon {
   const baseWeight = 8 + (level - 1) * 0.3
   const baseDurability = 45 + (level - 1) * 1
 
-  // Select material and quality using weighted random
-  const material = weightedRandomChoice(WEAPON_MATERIAL_CONFIG)
-  const quality = weightedRandomChoice(WEAPON_QUALITY_CONFIG)
+  // Select material and quality using PHP-style fixed ranges
+  const material = rangeBasedChoice(WEAPON_MATERIAL_CONFIG)
+  const quality = rangeBasedChoice(WEAPON_QUALITY_CONFIG)
 
   // Select weapon type (50/50 sword vs axe)
   const weaponType = randomChoice(WEAPON_TYPES)
@@ -125,9 +140,9 @@ export function generateArmor(level: number, location: ItemLocation): Armor {
   const baseWeight = 10 + (level - 1) * 1
   const baseDurability = 55 + (level - 1) * 0.9
 
-  // Select material and quality using weighted random
-  const material = weightedRandomChoice(ARMOR_MATERIAL_CONFIG)
-  const quality = weightedRandomChoice(ARMOR_QUALITY_CONFIG)
+  // Select material and quality using PHP-style fixed ranges
+  const material = rangeBasedChoice(ARMOR_MATERIAL_CONFIG)
+  const quality = rangeBasedChoice(ARMOR_QUALITY_CONFIG)
 
   // Apply multipliers (note: armor uses damageMultiplier for protection)
   const protection = roundTo(baseProtection * material.damageMultiplier * quality.damageMultiplier, 1)
@@ -201,11 +216,13 @@ export function generateTome(level: number, location: ItemLocation): Tome {
 
 /**
  * Generate a random consumable item
+ * Note: In PHP 0.8.1, apples are disabled - only bandages spawn
  */
 export function generateConsumable(location: ItemLocation, kind?: ItemKind): Consumable {
   return {
     id: generateId(),
-    kind: kind ?? randomChoice(ITEM_KINDS),
+    // Apples disabled in 0.8.1 - always generate bandages unless explicitly requested
+    kind: kind ?? 'Bandages',
     location,
   }
 }

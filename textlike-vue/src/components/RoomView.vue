@@ -19,6 +19,16 @@ function getDirectionName(dir: Direction): string {
   }
   return names[dir]
 }
+
+// Check if the room in a given direction has been explored (PHP 0.8.1 strikethrough behavior)
+function isExitExplored(dir: Direction): boolean {
+  if (!game.currentRoom) return false
+  const targetRoomId = game.currentRoom.exits[dir]
+  if (!targetRoomId) return false
+  const targetRoom = game.rooms.get(targetRoomId)
+  // A room is considered "explored" if its exits have been generated
+  return targetRoom?.roomsGenerated ?? false
+}
 </script>
 
 <template>
@@ -89,7 +99,10 @@ function getDirectionName(dir: Direction): string {
       Exits:
       <template v-for="(_, dir) in game.currentRoom.exits" :key="dir">
         <template v-if="game.currentRoom.exits[dir as Direction]">
-          <a @click="move(dir as Direction)">{{ getDirectionName(dir as Direction) }}</a>
+          <a
+            @click="move(dir as Direction)"
+            :class="{ explored: isExitExplored(dir as Direction) }"
+          >{{ getDirectionName(dir as Direction) }}</a>
           {{ ' ' }}
         </template>
       </template>
@@ -112,5 +125,10 @@ function getDirectionName(dir: Direction): string {
 .locked {
   color: #666;
   font-style: italic;
+}
+
+/* Strikethrough for exits leading to explored rooms (PHP 0.8.1 behavior) */
+.explored {
+  text-decoration: line-through;
 }
 </style>

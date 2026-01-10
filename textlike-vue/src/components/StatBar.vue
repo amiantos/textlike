@@ -72,6 +72,7 @@ function allocateStat(stat: 'strength' | 'stamina' | 'dexterity' | 'intelligence
       </tr>
       <tr>
         <td>
+          <!-- PHP 0.8.1 only shows Str, Sta, Dex in the top bar -->
           <div class="stat-row attributes">
             <div class="stat-item">
               <span class="stat-label">Str:</span>
@@ -87,16 +88,6 @@ function allocateStat(stat: 'strength' | 'stamina' | 'dexterity' | 'intelligence
               <span class="stat-label">Dex:</span>
               {{ game.character.dexterity }}
               <a v-if="hasAvailablePoints" @click="allocateStat('dexterity')" class="plus-btn">+</a>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Int:</span>
-              {{ game.character.intelligence }}
-              <a v-if="hasAvailablePoints" @click="allocateStat('intelligence')" class="plus-btn">+</a>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Lck:</span>
-              {{ game.character.luck }}
-              <a v-if="hasAvailablePoints" @click="allocateStat('luck')" class="plus-btn">+</a>
             </div>
           </div>
         </td>

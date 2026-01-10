@@ -120,3 +120,18 @@ export function shuffle<T>(array: T[]): T[] {
   }
   return result
 }
+
+/**
+ * Select from items based on fixed ranges (PHP-style)
+ * Each item has a minRoll and maxRoll (1-100 scale)
+ */
+export function rangeBasedChoice<T extends { minRoll: number; maxRoll: number }>(items: T[]): T {
+  const roll = randInt(1, 100)
+  for (const item of items) {
+    if (roll >= item.minRoll && roll <= item.maxRoll) {
+      return item
+    }
+  }
+  // Fallback to last item
+  return items[items.length - 1]!
+}
