@@ -20,7 +20,7 @@ import { createInitialRoom, generateExitsForRoom, generateChest, shouldSpawnChes
 import { randomChoice } from '../engine/utils'
 import { generateMobWithEquipment, getMobSpawnCount } from '../engine/mobs'
 import { generateSpecialChestLoot, generateNormalChestLoot } from '../engine/items'
-import { executeCombatTurn, executeExplorationTurn, createBattleLogEntry } from '../engine/combat'
+import { executeCombatTurn, executeExplorationTurn, createBattleLogEntry, determineFirstStrike, mobAttack, processTurnEnd, checkPlayerDeath } from '../engine/combat'
 import { generateId } from '../engine/utils'
 
 const STORAGE_KEY = 'textlike-save'
@@ -351,7 +351,29 @@ export const useGameStore = defineStore('game', () => {
     character.value.attackingMobId = mobId
     battleLog.value = []
 
-    addBattleLog('info', `You engage the ${mob.name}!`)
+    // Determine first strike (PHP attacking.php:811)
+    const firstStrike = determineFirstStrike(character.value.dexterity, mob.dexterity)
+
+    if (firstStrike === 'player') {
+      addBattleLog('info', `You caught the ${mob.name} unaware and take the initiative!`)
+      // Player gets to choose their action - no immediate attack
+    } else {
+      addBattleLog('info', `The ${mob.name} jumps in to attack as soon as you approach!`)
+      // Mob gets first strike - execute mob attack immediately
+      const mobWeaponForAttack = mob.equippedWeaponId ? weapons.value.get(mob.equippedWeaponId) ?? null : null
+      const mobResult = mobAttack(mob, character.value, mobWeaponForAttack, equippedArmor.value, false)
+      addBattleLog('mobAttack', mobResult.message)
+
+      // Process turn end after mob's first strike
+      const turnEnd = processTurnEnd(character.value, mob)
+      turnEnd.messages.forEach(msg => addBattleLog('bleeding', msg))
+
+      // Check for player death
+      if (checkPlayerDeath(character.value)) {
+        addBattleLog('death', 'You have died.')
+      }
+    }
+
     saveGame()
   }
 

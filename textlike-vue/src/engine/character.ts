@@ -411,27 +411,24 @@ export function autoHeal(character: Character): void {
 }
 
 /**
- * Heal character with apples (restores health)
+ * Heal character with apples - restores to full health
+ * PHP behavior: heal_amount = total_health (heals completely)
  */
 export function healWithApple(character: Character): number {
-  const healAmount = Math.min(
-    Math.round(character.totalHealth * 0.25), // Heal 25% of max health
-    character.totalHealth - character.currentHealth // Don't overheal
-  )
-  character.currentHealth += healAmount
+  const healAmount = character.totalHealth - character.currentHealth
+  character.currentHealth = character.totalHealth
   return healAmount
 }
 
 /**
- * Use bandages to reduce bleeding (clear wounds)
+ * Use bandages to completely heal all wounds
+ * PHP behavior: Sets all body part damage to 0
  */
 export function useBandages(character: Character): void {
-  // Reduce all wound values significantly
-  const reduction = character.totalHealth * 0.2
-  character.wounds.head = Math.max(0, character.wounds.head - reduction)
-  character.wounds.torso = Math.max(0, character.wounds.torso - reduction)
-  character.wounds.leftArm = Math.max(0, character.wounds.leftArm - reduction)
-  character.wounds.rightArm = Math.max(0, character.wounds.rightArm - reduction)
-  character.wounds.leftLeg = Math.max(0, character.wounds.leftLeg - reduction)
-  character.wounds.rightLeg = Math.max(0, character.wounds.rightLeg - reduction)
+  character.wounds.head = 0
+  character.wounds.torso = 0
+  character.wounds.leftArm = 0
+  character.wounds.rightArm = 0
+  character.wounds.leftLeg = 0
+  character.wounds.rightLeg = 0
 }

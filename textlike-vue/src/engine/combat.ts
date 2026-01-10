@@ -15,7 +15,6 @@ import { damageWeapon, damageArmor, damageTome } from './items'
 import { calculateMobBleeding } from './mobs'
 import {
   calculateBleeding,
-  healWounds,
   autoHeal,
   killCharacter,
   addExperience,
@@ -53,6 +52,20 @@ export interface TurnResult {
   experienceGained: number
   leveledUp: boolean
   messages: string[]
+}
+
+// ============================================================================
+// FIRST STRIKE DETERMINATION
+// ============================================================================
+
+/**
+ * Determine who gets first strike when combat begins
+ * PHP (attacking.php:811): player_dex > (enemy_dex - rand(0,5))
+ * @returns 'player' if player attacks first, 'mob' if mob attacks first
+ */
+export function determineFirstStrike(playerDex: number, mobDex: number): 'player' | 'mob' {
+  const threshold = mobDex - randInt(0, 5)
+  return playerDex > threshold ? 'player' : 'mob'
 }
 
 // ============================================================================
@@ -136,16 +149,30 @@ export function getBodyPartName(part: BodyPart): string {
 
 /**
  * Calculate weapon attack damage
+ * PHP behavior: Preserves strength bonus even when armor blocks weapon damage
  * damage = weaponDamage + (strength * 0.5)
- * finalDamage = max(0, damage - armorProtection)
+ * After armor reduction, if damage dropped below strength bonus, add it back
  */
 export function calculateWeaponDamage(
   weaponDamage: number,
   attackerStrength: number,
   armorProtection: number
 ): number {
-  const baseDamage = weaponDamage + attackerStrength * 0.5
-  return Math.max(0, roundTo(baseDamage - armorProtection, 1))
+  const strengthBonus = attackerStrength * 0.5
+  const baseDamage = weaponDamage + strengthBonus
+  let finalDamage = baseDamage - armorProtection
+
+  // Ensure minimum 0
+  if (finalDamage <= 0) {
+    finalDamage = 0
+  }
+
+  // PHP preserves strength modifier: if damage dropped below str bonus, add it back
+  if (finalDamage < strengthBonus) {
+    finalDamage = finalDamage + strengthBonus
+  }
+
+  return roundTo(finalDamage, 1)
 }
 
 /**
@@ -378,6 +405,9 @@ function applyDamageToCharacter(character: Character, damage: number, bodyPart: 
 
 /**
  * Process end of turn effects (bleeding, healing, etc.)
+ * PHP order: auto_heal -> bleeding -> death checks
+ * Note: healWounds is NOT called - PHP only has auto_heal which reduces by 1 per body part
+ * The 5% offset is already applied during bleeding calculation, not as separate wound reduction
  */
 export function processTurnEnd(
   character: Character,
@@ -387,7 +417,7 @@ export function processTurnEnd(
   let playerBleedDamage = 0
   let mobBleedDamage = 0
 
-  // Auto heal character
+  // Auto heal character (reduces each wound by 1)
   autoHeal(character)
 
   // Process player bleeding
@@ -397,9 +427,6 @@ export function processTurnEnd(
     messages.push(`You bleed for ${roundTo(playerBleedDamage, 1)} damage.`)
   }
 
-  // Reduce player wounds over time
-  healWounds(character)
-
   // Process mob bleeding if in combat
   if (mob && !mob.isCorpse) {
     mobBleedDamage = calculateMobBleeding(mob)
@@ -407,15 +434,6 @@ export function processTurnEnd(
       mob.currentHealth = Math.max(0, mob.currentHealth - mobBleedDamage)
       messages.push(`The ${mob.name} bleeds for ${roundTo(mobBleedDamage, 1)} damage.`)
     }
-
-    // Reduce mob wounds over time
-    const offset = mob.totalHealth * 0.05
-    mob.wounds.head = Math.max(0, mob.wounds.head - offset)
-    mob.wounds.torso = Math.max(0, mob.wounds.torso - offset)
-    mob.wounds.leftArm = Math.max(0, mob.wounds.leftArm - offset)
-    mob.wounds.rightArm = Math.max(0, mob.wounds.rightArm - offset)
-    mob.wounds.leftLeg = Math.max(0, mob.wounds.leftLeg - offset)
-    mob.wounds.rightLeg = Math.max(0, mob.wounds.rightLeg - offset)
   }
 
   // Increment turn counter
@@ -474,6 +492,7 @@ export function createBattleLogEntry(
 
 /**
  * Execute a full combat turn (player action, mob action, end of turn)
+ * PHP turn order (endturn.php): auto_heal -> mob_attack -> bleeding -> death checks
  */
 export function executeCombatTurn(
   action: 'attack' | 'defend' | 'tome',
@@ -490,6 +509,8 @@ export function executeCombatTurn(
   let mobAttackResult: AttackResult | null = null
   let experienceGained = 0
   let leveledUp = false
+  let playerBleedDamage = 0
+  let mobBleedDamage = 0
   const isDefending = action === 'defend'
 
   // Player action
@@ -514,17 +535,37 @@ export function executeCombatTurn(
     }
   }
 
-  // Mob attacks (if still alive)
+  // === PHP TURN ORDER (endturn.php) ===
+
+  // 1. Auto heal character FIRST (before mob counter-attack)
+  autoHeal(character)
+
+  // 2. Mob attacks (if still alive)
   if (!mob.isCorpse) {
     mobAttackResult = mobAttack(mob, character, mobWeapon, playerArmor, isDefending)
     messages.push(mobAttackResult.message)
   }
 
-  // Process end of turn
-  const turnEnd = processTurnEnd(character, mob.isCorpse ? null : mob)
-  messages.push(...turnEnd.messages)
+  // 3. Process player bleeding
+  playerBleedDamage = calculateBleeding(character)
+  if (playerBleedDamage > 0) {
+    character.currentHealth = Math.max(0, character.currentHealth - playerBleedDamage)
+    messages.push(`You bleed for ${roundTo(playerBleedDamage, 1)} damage.`)
+  }
 
-  // Final death checks
+  // 4. Process mob bleeding
+  if (!mob.isCorpse) {
+    mobBleedDamage = calculateMobBleeding(mob)
+    if (mobBleedDamage > 0) {
+      mob.currentHealth = Math.max(0, mob.currentHealth - mobBleedDamage)
+      messages.push(`The ${mob.name} bleeds for ${roundTo(mobBleedDamage, 1)} damage.`)
+    }
+  }
+
+  // 5. Increment turn counter
+  character.turns++
+
+  // 6. Final death checks
   const playerDied = checkPlayerDeath(character)
 
   if (!mobDeathCheck.died) {
@@ -546,8 +587,8 @@ export function executeCombatTurn(
   return {
     playerAttackResult,
     mobAttackResult,
-    playerBleedDamage: turnEnd.playerBleedDamage,
-    mobBleedDamage: turnEnd.mobBleedDamage,
+    playerBleedDamage,
+    mobBleedDamage,
     playerDied,
     mobDied: mob.isCorpse,
     experienceGained,
