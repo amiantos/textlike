@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '../stores/gameStore'
+import { calculateMobBleeding } from '../engine/mobs'
 
 const game = useGameStore()
 
 const mobBleeding = computed(() => {
   if (!game.currentMob) return 0
-  const w = game.currentMob.wounds
-  return Math.round(w.head + w.torso + w.leftArm + w.rightArm + w.leftLeg + w.rightLeg)
+  return calculateMobBleeding(game.currentMob)
 })
 </script>
 

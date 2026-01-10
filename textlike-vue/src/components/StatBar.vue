@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '../stores/gameStore'
-import { getExperienceProgress, getTotalWounds } from '../engine/character'
+import { getExperienceProgress, calculateBleeding } from '../engine/character'
 
 const game = useGameStore()
 
@@ -12,7 +12,7 @@ const expProgress = computed(() => {
 
 const bleeding = computed(() => {
   if (!game.character) return 0
-  return getTotalWounds(game.character)
+  return calculateBleeding(game.character)
 })
 
 const hasAvailablePoints = computed(() => {
