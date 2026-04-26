@@ -1,0 +1,32 @@
+services:
+  textlike-web:
+    build: .
+    platform: linux/amd64
+    depends_on:
+      - textlike-db
+    environment:
+      - DB_HOST=textlike-db
+      - DB_USER=textlike
+      - DB_PASS=textlike
+      - DB_NAME=textlike
+    restart: unless-stopped
+    networks:
+      - proxy-network
+      - default
+
+  textlike-db:
+    image: mysql:5.6
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: textlike
+      MYSQL_USER: textlike
+      MYSQL_PASSWORD: textlike
+    volumes:
+      - ./data:/var/lib/mysql
+      - ./db/textlike.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+networks:
+  proxy-network:
+    external: true

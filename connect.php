@@ -2,10 +2,10 @@
 
 if(!defined('INCLUDE_CHECK')) die('You are not allowed to execute this file directly');
 
-$db_host		= 'db';
-$db_user		= 'textlike';
-$db_pass		= 'textlike';
-$db_database	= 'textlike';
+$db_host		= getenv('DB_HOST') ?: 'db';
+$db_user		= getenv('DB_USER') ?: 'textlike';
+$db_pass		= getenv('DB_PASS') ?: 'textlike';
+$db_database	= getenv('DB_NAME') ?: 'textlike';
 
 /* End config */
 
